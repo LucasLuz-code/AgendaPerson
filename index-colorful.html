@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Pro | Gestão Visual de Tarefas</title>
+    
+    <!-- Estilos Externos -->
+    <link rel="stylesheet" href="styles-colorful.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+
+    <!-- Bibliotecas Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body class="theme-light">
+    <!-- Particles Background -->
+    <div class="particles-bg"></div>
+
+    <!-- Overlay de Carregamento -->
+    <div id="loader" class="loader-wrapper">
+        <div class="loader-rings">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+        </div>
+        <p>Carregando suas tarefas...</p>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Colorida -->
+        <aside class="sidebar-colorful">
+            <div class="sidebar-header">
+                <div class="logo-animated">
+                    <div class="logo-circle">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="logo-glow"></div>
+                </div>
+                <div class="brand-info">
+                    <h1>Task<span>Flow</span></h1>
+                    <p class="subtitle">Produtividade Visual</p>
+                </div>
+            </div>
+
+            <nav class="category-nav">
+                <p class="nav-title">Filtros</p>
+                <ul class="category-list">
+                    <li class="category-item active" data-filter="Todos">
+                        <div class="category-icon purple">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <span>Todos</span>
+                        <div class="item-glow"></div>
+                    </li>
+                    <li class="category-item" data-filter="Provas">
+                        <div class="category-icon blue">
+                            <i class="fas fa-file-pen"></i>
+                        </div>
+                        <span>Provas</span>
+                        <div class="item-glow"></div>
+                    </li>
+                    <li class="category-item" data-filter="Tarefas">
+                        <div class="category-icon green">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <span>Tarefas</span>
+                        <div class="item-glow"></div>
+                    </li>
+                    <li class="category-item" data-filter="Trabalhos">
+                        <div class="category-icon orange">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <span>Trabalhos</span>
+                        <div class="item-glow"></div>
+                    </li>
+                    <li class="category-item" data-filter="TCC">
+                        <div class="category-icon pink">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <span>TCC</span>
+                        <div class="item-glow"></div>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-stats">
+                <div class="stat-card">
+                    <i class="fas fa-fire"></i>
+                    <div>
+                        <p class="stat-value" id="streak-count">0</p>
+                        <p class="stat-label">Sequência</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-trophy"></i>
+                    <div>
+                        <p class="stat-value" id="completed-count">0</p>
+                        <p class="stat-label">Completas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-switcher">
+                <button id="theme-btn" class="theme-button">
+                    <i class="fas fa-moon"></i>
+                    <span>Modo Noturno</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Área Principal -->
+        <main class="main-area">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-tasks" placeholder="Buscar tarefas, categorias ou status...">
+                    <div class="search-glow"></div>
+                </div>
+                <div class="header-controls">
+                    <button class="control-btn notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button id="btn-add-task" class="btn-gradient">
+                        <i class="fas fa-plus"></i>
+                        <span>Nova Tarefa</span>
+                        <div class="btn-shine"></div>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Pendentes -->
+                <section class="tasks-section">
+                    <div class="section-title">
+                        <div class="title-icon pending">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <h2>Em Andamento</h2>
+                        <span id="badge-pending" class="count-badge">0</span>
+                    </div>
+                    <div id="tasks-pending" class="tasks-grid">
+                        <!-- Injetado via JS -->
+                    </div>
+                </section>
+
+                <!-- Concluídos -->
+                <section class="tasks-section">
+                    <div class="section-title">
+                        <div class="title-icon completed">
+                            <i class="fas fa-circle-check"></i>
+                        </div>
+                        <h2>Finalizados</h2>
+                        <span id="badge-completed" class="count-badge success">0</span>
+                    </div>
+                    <div id="tasks-completed" class="tasks-grid">
+                        <!-- Injetado via JS -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Formulário -->
+    <div id="task-modal" class="modal-backdrop">
+        <div class="modal-container animate__animated animate__bounceIn">
+            <div class="modal-top">
+                <h2 id="modal-header">✨ Nova Tarefa</h2>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-task">
+                <input type="hidden" id="edit-id">
+                
+                <div class="form-field">
+                    <label><i class="fas fa-text"></i> Descrição *</label>
+                    <input type="text" id="inp-description" placeholder="O que você precisa fazer?" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label><i class="fas fa-calendar"></i> Prazo</label>
+                        <input type="date" id="inp-date">
+                    </div>
+                    <div class="form-field">
+                        <label><i class="fas fa-flag"></i> Prioridade</label>
+                        <select id="inp-priority">
+                            <option value="baixa">🟢 Baixa</option>
+                            <option value="média">🟡 Média</option>
+                            <option value="alta">🔴 Alta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label><i class="fas fa-folder"></i> Categoria</label>
+                        <select id="inp-category">
+                            <option value="Tarefas">📋 Tarefas</option>
+                            <option value="Provas">📝 Provas</option>
+                            <option value="Trabalhos">📂 Trabalhos</option>
+                            <option value="TCC">🎓 TCC</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label><i class="fas fa-chart-line"></i> Status</label>
+                        <select id="inp-status">
+                            <option value="ninguem-fazendo">⚪ Ninguém Fazendo</option>
+                            <option value="desenvolvendo">🔵 Desenvolvendo</option>
+                            <option value="quase-pronto">🟡 Quase Pronto</option>
+                            <option value="pronto">🟢 Pronto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tcc-area" class="form-field hidden">
+                    <label><i class="fas fa-list"></i> Etapas e Detalhes *</label>
+                    <textarea id="inp-details" rows="4" placeholder="Descreva as etapas do seu TCC..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel modal-close">Cancelar</button>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Conclusão -->
+    <div id="complete-modal" class="modal-backdrop">
+        <div class="modal-container complete-animation animate__animated animate__zoomIn">
+            <div class="celebration">
+                <i class="fas fa-trophy"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-medal"></i>
+            </div>
+            <div class="modal-top">
+                <h2>🎉 Tarefa Concluída!</h2>
+                <button class="modal-close-complete"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="complete-content">
+                <p class="complete-message">Parabéns! Mais uma conquista! 🚀</p>
+                <div class="form-field">
+                    <label><i class="fas fa-user"></i> Quem completou?</label>
+                    <input type="text" id="inp-completed-by" placeholder="Digite seu nome..." required>
+                </div>
+                <p class="complete-hint">
+                    <i class="fas fa-info-circle"></i>
+                    Seu nome ficará registrado junto com esta conquista!
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel modal-close-complete">Voltar</button>
+                <button type="button" id="btn-confirm-done" class="btn-save">
+                    <i class="fas fa-check-circle"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes TCC -->
+    <div id="details-modal" class="modal-backdrop">
+        <div class="modal-container animate__animated animate__fadeInUp">
+            <div class="modal-top">
+                <h2>📚 Detalhes do TCC</h2>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="details-body" class="details-content">
+                <!-- Injetado via JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-save modal-close">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script-colorful.js"></script>
+</body>
+</html>
